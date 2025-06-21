@@ -2,18 +2,20 @@
 /*          ГЛОБАЛЬНЫЕ СТИЛИ И ЦВЕТА        */
 /* ======================================== */
 :root {
-    --primary-color: #1c1c1c;
-    --secondary-color: #0d0d0d;
-    --accent-color: #990000;
-    --text-color: #e0e0e0;
+    --primary-color: rgba(26, 26, 46, 0.6);
+    --secondary-color: rgba(13, 13, 23, 0.8);
+    --accent-color: #00aaff;
+    --glow-color: rgba(0, 170, 255, 0.7);
+    --text-color: #f0f0f0;
+    --border-color: rgba(255, 255, 255, 0.1);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    display: flex; flex-direction: column; /* Изменено для хедера */
-    height: 100vh; overflow: hidden; /* Запрещаем скролл на десктопе */
-    background: linear-gradient(45deg, #000000, #330000, #000000, #330000);
+    display: flex; flex-direction: column;
+    height: 100vh; overflow: hidden;
+    background: linear-gradient(45deg, #020024, #090979, #002b36, #020024);
     background-size: 400% 400%;
     animation: gradient-animation 15s ease infinite;
     color: var(--text-color);
@@ -23,84 +25,63 @@ body {
 /* ======================================== */
 /*          HEADER И МАКЕТ                  */
 /* ======================================== */
-.app-header {
-    width: 100%; padding: 15px 25px;
-    display: flex; justify-content: space-between; align-items: center;
-    flex-shrink: 0; /* Не сжиматься */
-}
+.app-header { width: 100%; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 10; }
 .version-text { color: #888; font-size: 0.9em; }
-.rainbow-text {
-    font-weight: bold; font-size: 1.1em; text-decoration: none;
-    background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
-    background-size: 200% auto; color: #000;
-    background-clip: text; -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: rainbow-text-animation 5s linear infinite;
-}
+#fps-counter { position: absolute; left: 50%; transform: translateX(-50%); color: #666; font-family: monospace; }
+.rainbow-text { font-weight: bold; font-size: 1.1em; text-decoration: none; background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000); background-size: 200% auto; color: #000; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: rainbow-text-animation 5s linear infinite; }
 @keyframes rainbow-text-animation { to { background-position: 200% center; } }
-
-.app-layout {
-    display: flex; gap: 20px;
-    width: 95%; height: calc(100% - 70px);
-    max-width: 1400px;
-}
+.app-layout { display: flex; gap: 20px; width: 95%; height: calc(100% - 70px); max-width: 1400px; }
 
 /* ======================================== */
 /*          ОСНОВНЫЕ ЭЛЕМЕНТЫ               */
 /* ======================================== */
-.stabilization-wrapper {
-    flex: 3;
-    height: 100%; background: rgba(0, 0, 0, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 15px;
-    display: flex; justify-content: center; align-items: center;
-    overflow: hidden; position: relative; transition: backdrop-filter 0.3s ease;
-}
+.stabilization-wrapper { flex: 3; height: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 20px; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; transition: backdrop-filter 0.3s ease; }
 #phone-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; transition: transform 0.3s ease-out; }
-#phone-image { max-height: 95%; max-width: 95%; user-select: none; cursor: grab; transform-style: preserve-3d; transform-origin: 50% 50%; }
-.controls {
-    flex: 2;
-    height: 100%; overflow-y: auto;
-    background-color: var(--primary-color); padding: 25px; border-radius: 10px;
-    display: flex; flex-direction: column; gap: 15px;
-}
-/* ... (остальные стили кнопок, плеера и т.д. без изменений) ... */
-.controls h2{text-align:center;color:var(--accent-color);margin-bottom:10px;flex-shrink:0}.control-group{display:flex;flex-direction:column;gap:8px}label{font-size:.9em}select,button{width:100%;background-color:var(--secondary-color);color:var(--text-color);border:1px solid var(--accent-color);border-radius:5px;padding:10px;font-size:16px;cursor:pointer;transition:background-color .2s;text-align:center;flex-shrink:0}select:hover,button:hover{background-color:var(--accent-color)}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;background:var(--secondary-color);border-radius:5px;outline:none;cursor:pointer}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;background:var(--accent-color);border-radius:50%}.knob-container{display:flex;justify-content:center;align-items:center;padding:15px 0}#stabilization-knob{position:relative;width:120px;height:120px;background-color:var(--secondary-color);border:4px solid #000;border-radius:50%;box-shadow:0 0 15px rgba(0,0,0,.5),inset 0 0 10px rgba(0,0,0,.5);cursor:grab;flex-shrink:0}#stabilization-knob:active{cursor:grabbing}#knob-handle{position:absolute;top:10px;left:50%;width:10px;height:10px;background-color:var(--accent-color);border-radius:50%;box-shadow:0 0 5px var(--accent-color);transform-origin:50% 50px}#custom-player{background-color:var(--secondary-color);border-radius:5px;padding:10px;flex-shrink:0}.player-controls{display:flex;align-items:center;gap:15px}.player-btn{background:none;border:none;color:var(--text-color);font-size:20px;cursor:pointer;padding:5px;width:40px;text-align:center}.player-btn:hover{color:var(--accent-color);background:none}.timeline-container{flex-grow:1;height:8px;background-color:#000;border-radius:4px;cursor:pointer;position:relative}#progress{position:absolute;top:0;left:0;height:100%;width:0;background-color:var(--accent-color);border-radius:4px;pointer-events:none}.hidden{display:none!important}.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.75);display:flex;justify-content:center;align-items:center;z-index:1000}.modal-content{background-color:var(--primary-color);padding:25px 30px;border-radius:10px;border:1px solid var(--accent-color);text-align:center;display:flex;flex-direction:column;gap:15px;max-width:300px}.modal-content h3{margin-bottom:5px}.modal-content p{font-size:.9em;line-height:1.4;color:#aaa}.modal-content input[type=password]{padding:10px;border-radius:5px;border:1px solid var(--secondary-color);background-color:var(--secondary-color);color:var(--text-color);text-align:center;font-size:16px}#password-error,#dev-mode-info{font-size:.9em;font-weight:700;min-height:1em}#password-error{color:var(--accent-color)}#dev-mode-info{color:#4caf50}
+#phone-image { max-height: 95%; max-width: 95%; user-select: none; cursor: grab; transform-style: preserve-3d; transform-origin: 50% 50%; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4)); }
+.controls { flex: 2; height: 100%; overflow-y: auto; background: var(--primary-color); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--border-color); padding: 25px; border-radius: 20px; display: flex; flex-direction: column; gap: 20px; }
+.controls h2 { text-align: center; color: var(--accent-color); margin-bottom: 10px; flex-shrink: 0; text-shadow: 0 0 10px var(--glow-color); }
+.control-group { display: flex; flex-direction: column; gap: 10px; }
+.stabilization-control label { text-align: center; } /* Центрируем надпись */
+label { font-size: 0.9em; color: #ccc; }
+select, button { width: 100%; background-color: var(--secondary-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; font-size: 16px; cursor: pointer; transition: all 0.2s; text-align: center; flex-shrink: 0; }
+select:hover, button:hover { border-color: var(--accent-color); box-shadow: 0 0 15px var(--glow-color); }
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: var(--secondary-color); border-radius: 5px; outline: none; cursor: pointer; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: var(--accent-color); border-radius: 50%; }
+.knob-container { display: flex; justify-content: center; align-items: center; padding: 15px 0; }
+#stabilization-knob { position: relative; width: 140px; height: 140px; background: radial-gradient(circle, #2a2a3a 0%, #0d0d17 100%); border: 1px solid var(--border-color); border-radius: 50%; box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(0,0,0,0.7); cursor: grab; flex-shrink: 0; }
+#stabilization-knob:active { cursor: grabbing; transform: scale(0.98); }
+#knob-handle { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background-color: var(--accent-color); border-radius: 50%; box-shadow: 0 0 10px var(--glow-color), 0 0 20px var(--glow-color); transform-origin: 50% 55px; }
 
+/* НОВЫЕ СТИЛИ ДЛЯ КНОПКИ ПОДДЕРЖКИ */
+.support-button {
+    text-decoration: none; color: white; font-weight: bold;
+    padding: 15px; border-radius: 10px; border: none;
+    background: linear-gradient(90deg, #ff0077, #7a00ff, #0077ff, #00ff77, #ffea00, #ff7b00, #ff0077);
+    background-size: 400% 100%;
+    animation: support-button-animation 8s linear infinite;
+    position: relative; overflow: hidden;
+}
+.support-button span { position: relative; z-index: 2; }
+.support-button:before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: left 0.5s; z-index: 1; }
+.support-button:hover:before { left: 100%; }
+@keyframes support-button-animation { to { background-position: 400% 0; } }
+.support-button i { margin-right: 10px; }
+
+/* ... (стили для модальных окон без изменений) ... */
+.hidden{display:none!important}.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.75);display:flex;justify-content:center;align-items:center;z-index:1000}.modal-content{background:var(--primary-color);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:1px solid var(--border-color);padding:25px 30px;border-radius:20px;text-align:center;display:flex;flex-direction:column;gap:15px;max-width:320px}.modal-content h3{margin-bottom:5px}.modal-content p{font-size:.9em;line-height:1.4;color:#aaa}.modal-content input[type=password]{padding:10px;border-radius:10px;border:1px solid var(--border-color);background-color:var(--secondary-color);color:var(--text-color);text-align:center;font-size:16px}#password-error,#dev-mode-info{font-size:.9em;font-weight:700;min-height:1em}#password-error{color:#ff3b3b}#dev-mode-info{color:#34c759}
 
 /* ======================================== */
-/*      МОБИЛЬНАЯ ОПТИМИЗАЦИЯ НА GRID       */
+/*      МОБИЛЬНАЯ ОПТИМИЗАЦИЯ               */
 /* ======================================== */
 @media (max-width: 900px) {
-    body {
-        /* Убираем overflow: hidden чтобы работал скролл, если нужно */
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .app-layout {
-        /* ПЕРЕДЕЛЫВАЕМ НА GRID ДЛЯ СТАБИЛЬНОСТИ */
-        display: grid;
-        grid-template-columns: 55% 45%; /* Левая колонка 55%, правая 45% */
-        gap: 10px;
-        width: 100%;
-        height: auto;
-        padding: 0 10px 20px 10px;
-    }
-    .stabilization-wrapper {
-        grid-column: 1 / 2; /* Первая колонка */
-        height: 75vh; /* Высота относительно экрана */
-        min-height: 400px;
-    }
-    .controls {
-        grid-column: 2 / 3; /* Вторая колонка */
-        height: 75vh; /* Та же высота */
-        min-height: 400px;
-        padding: 15px;
-        gap: 10px;
-    }
-    .app-header {
-        position: static; /* Убираем absolute, чтобы не перекрывал контент */
-    }
-    .knob-container { padding: 10px 0; }
-    #stabilization-knob { width: 90px; height: 90px; }
-    #knob-handle { transform-origin: 50% 40px; }
+    body { overflow: auto; -webkit-overflow-scrolling: touch; }
+    .app-layout { display: grid; grid-template-columns: 58% 42%; gap: 10px; width: 100%; height: auto; min-height: calc(100vh - 70px); padding: 0 10px 20px 10px; }
+    .app-header { position: sticky; top: 0; background: rgba(2, 0, 36, 0.8); backdrop-filter: blur(10px); }
+    .stabilization-wrapper { grid-column: 1 / 2; height: 80vh; min-height: 450px; }
+    #phone-container { transform: scale(1.15); }
+    .controls { grid-column: 2 / 3; height: 80vh; min-height: 450px; padding: 15px; gap: 15px; }
+    .controls h2 { font-size: 1.2em; }
+    select, button, .support-button { padding: 10px; font-size: 14px; }
+    #stabilization-knob { width: 100px; height: 100px; }
+    #knob-handle { transform-origin: 50% 42.5px; }
 }

@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Stabilization Effect</title>
+    <title>Camera Stabilization Effect v1.1</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header class="app-header">
-        <span class="version-text">Версия 1.0</span>
+        <span class="version-text">Версия 1.1</span>
+        <!-- НОВЫЙ СЧЕТЧИК FPS -->
+        <span id="fps-counter">-- FPS</span>
         <a href="https://t.me/jeliktontech" target="_blank" class="rainbow-text">t.me/jeliktontech</a>
     </header>
 
@@ -40,23 +42,18 @@
                     <div id="stabilization-knob"><div id="knob-handle"></div></div>
                 </div>
             </div>
-
-            <div id="custom-player">
-                <audio id="audio-source" src="music/music.mp3"></audio>
-                <div class="player-controls">
-                    <button id="play-pause-btn" class="player-btn"><i class="fas fa-play"></i></button>
-                    <div class="timeline-container">
-                        <div id="timeline"></div>
-                        <div id="progress"></div>
-                    </div>
-                </div>
-            </div>
+            
+            <!-- ОБНОВЛЕННАЯ КНОПКА ПОДДЕРЖКИ -->
+            <a href="https://t.me/jelikton?text=Привет!%20Хочу%20поддержать%20твой%20проект." target="_blank" class="support-button">
+                <span><i class="fas fa-rocket"></i> Поддержать проект</span>
+            </a>
     
             <button id="dev-mode-button">Режим разработчика</button>
             <p id="dev-mode-info" class="hidden">✓ Режим активен</p>
         </div>
     </div>
 
+    <!-- Модальное окно для пароля (без изменений) -->
     <div id="password-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h3>Вход для разработчика</h3>
