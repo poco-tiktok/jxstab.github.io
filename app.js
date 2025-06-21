@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- ДАННЫЕ С ИСПРАВЛЕННЫМИ ПУТЯМИ ---
     const phones = {
-        'Xiaomi15U': { image: 'phones/Xiaomi15U.png', stabilizationPoint: { x: '56.82%', y: '23.49%' }, maxZoom: 120 },
-        'VivoX200U': { image: 'phones/VivoX200U.png', stabilizationPoint: { x: '44.81%', y: '24.38%' }, maxZoom: 100 }
+        'Xiaomi15U': { image: 'Xiaomi15U.png', stabilizationPoint: { x: '56.82%', y: '23.49%' }, maxZoom: 120 },
+        'VivoX200U': { image: 'VivoX200U.png', stabilizationPoint: { x: '44.81%', y: '24.38%' }, maxZoom: 100 }
     };
     const DEV_PASSWORD = 'dev123';
-    let currentPhoneRotation = 0, startDragAngle = 0, startPhoneRotation = 0;
-    let isDevMode = false;
+    let currentPhoneRotation = 0, startDragAngle = 0, startPhoneRotation = 0, isDevMode = false;
 
-    // --- ЭЛЕМЕНТЫ DOM ---
+    // --- ЭЛЕМЕНТЫ DOM (без изменений) ---
     const wrapperBg = document.getElementById('wrapper-bg');
     const phoneContainer = document.getElementById('phone-container');
     const phoneImage = document.getElementById('phone-image');
@@ -31,8 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function init() {
         for (const model in phones) {
             const option = document.createElement('option');
-            option.value = model;
-            option.textContent = model;
+            option.value = model; option.textContent = model;
             phoneSelect.appendChild(option);
         }
         updatePhone();
@@ -51,133 +50,47 @@ document.addEventListener('DOMContentLoaded', () => {
         phoneImage.addEventListener('click', handleDevClick);
     }
 
-    function onKnobMouseDown(e) {
-        e.preventDefault();
-        startDragAngle = getAngleFromMouse(e);
-        startPhoneRotation = currentPhoneRotation;
-        document.addEventListener('mousemove', onKnobMouseMove);
-        document.addEventListener('mouseup', onKnobMouseUp);
-    }
-
-    function onKnobMouseMove(e) {
-        const currentDragAngle = getAngleFromMouse(e);
-        const angleDifference = currentDragAngle - startDragAngle;
-        currentPhoneRotation = startPhoneRotation + angleDifference;
-        applyRotationAndEffects();
-    }
-
-    function onKnobMouseUp() {
-        document.removeEventListener('mousemove', onKnobMouseMove);
-        document.removeEventListener('mouseup', onKnobMouseUp);
-    }
-
-    function getAngleFromMouse(e) {
-        const rect = knob.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const angleRad = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-        return angleRad * (180 / Math.PI);
-    }
-    
-    function handleMouseWheel(e) {
-        e.preventDefault();
-        const rotationStep = 5;
-        currentPhoneRotation += e.deltaY > 0 ? rotationStep : -rotationStep;
-        applyRotationAndEffects();
-    }
-    
+    // --- ЛОГИКА ВРАЩЕНИЯ И ЭФФЕКТОВ ---
+    function onKnobMouseDown(e) { e.preventDefault(); startDragAngle = getAngleFromMouse(e); startPhoneRotation = currentPhoneRotation; document.addEventListener('mousemove', onKnobMouseMove); document.addEventListener('mouseup', onKnobMouseUp); }
+    function onKnobMouseMove(e) { const currentDragAngle = getAngleFromMouse(e); const angleDifference = currentDragAngle - startDragAngle; currentPhoneRotation = startPhoneRotation + angleDifference; applyRotationAndEffects(); }
+    function onKnobMouseUp() { document.removeEventListener('mousemove', onKnobMouseMove); document.removeEventListener('mouseup', onKnobMouseUp); }
+    function getAngleFromMouse(e) { const rect = knob.getBoundingClientRect(); const centerX = rect.left + rect.width / 2; const centerY = rect.top + rect.height / 2; const angleRad = Math.atan2(e.clientY - centerY, e.clientX - centerX); return angleRad * (180 / Math.PI); }
+    function handleMouseWheel(e) { e.preventDefault(); const rotationStep = 5; currentPhoneRotation += e.deltaY > 0 ? rotationStep : -rotationStep; applyRotationAndEffects(); }
     function applyRotationAndEffects() {
         phoneImage.style.transform = `perspective(1000px) rotateZ(${currentPhoneRotation}deg)`;
         knobHandle.style.transform = `translateX(-50%) rotate(${currentPhoneRotation}deg)`;
-        
-        const MAX_BLUR = 25;
-        const BLUR_SENSITIVITY = 30;    
+        const MAX_BLUR = 25; const BLUR_SENSITIVITY = 30;
         const blurAmount = Math.min(MAX_BLUR, Math.abs(currentPhoneRotation) / BLUR_SENSITIVITY);
         wrapperBg.style.backdropFilter = `blur(${blurAmount}px)`;
     }
-
-    function handleZoom() {
-        zoomValue.textContent = parseFloat(zoomSlider.value).toFixed(1);
-        phoneContainer.style.transform = `scale(${zoomSlider.value})`;
-    }
-    
+    function handleZoom() { zoomValue.textContent = parseFloat(zoomSlider.value).toFixed(1); phoneContainer.style.transform = `scale(${zoomSlider.value})`; }
     function updatePhone() {
-        const selectedModel = phoneSelect.value;
-        if (!selectedModel) return;
+        const selectedModel = phoneSelect.value; if (!selectedModel) return;
         const phoneData = phones[selectedModel];
-        
         const originPoint = `${phoneData.stabilizationPoint.x} ${phoneData.stabilizationPoint.y}`;
-        phoneImage.style.transformOrigin = originPoint;
-        phoneContainer.style.transformOrigin = originPoint;
-        
+        phoneImage.style.transformOrigin = originPoint; phoneContainer.style.transformOrigin = originPoint;
         phoneImage.src = phoneData.image;
-        
         zoomSlider.max = phoneData.maxZoom;
-        
-        if (parseFloat(zoomSlider.value) > phoneData.maxZoom) {
-            zoomSlider.value = phoneData.maxZoom;
-        }
+        if (parseFloat(zoomSlider.value) > phoneData.maxZoom) { zoomSlider.value = phoneData.maxZoom; }
         handleZoom();
-        
-        currentPhoneRotation = 0;
-        applyRotationAndEffects();
+        currentPhoneRotation = 0; applyRotationAndEffects();
     }
     
-    function togglePlay() {
-        if (audio.paused) {
-            audio.play();
-            playIcon.classList.replace('fa-play', 'fa-pause');
-        } else {
-            audio.pause();
-            playIcon.classList.replace('fa-pause', 'fa-play');
-        }
-    }
-
-    function updateProgress() {
-        const { duration, currentTime } = audio;
-        if (duration) {
-            const progressPercent = (currentTime / duration) * 100;
-            progress.style.width = `${progressPercent}%`;
-        }
-    }
-
-    function setTime(e) {
-        const width = this.clientWidth;
-        const clickX = e.offsetX;
-        const duration = audio.duration;
-        if (duration) {
-            audio.currentTime = (clickX / width) * duration;
-        }
-    }
-
-    function handlePasswordSubmit() {
-        if (passwordInput.value === DEV_PASSWORD) {
-            isDevMode = true;
-            passwordModal.classList.add('hidden');
-            devModeInfo.classList.remove('hidden');
-            devModeButton.style.backgroundColor = '#4caf50';
-            passwordInput.value = '';
-            passwordError.classList.add('hidden');
-        } else {
-            passwordError.classList.remove('hidden');
-        }
-    }
-
-    function handleDevClick(event) {
-        if (!isDevMode) return;
-        event.stopPropagation();
-        const rect = event.target.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const xPercent = (x / rect.width * 100).toFixed(2);
-        const yPercent = (y / rect.height * 100).toFixed(2);
-        const selectedModel = phoneSelect.value;
-        
-        phones[selectedModel].stabilizationPoint = { x: `${xPercent}%`, y: `${yPercent}%` };
+    // --- ОСТАЛЬНЫЕ ФУНКЦИИ ---
+    function togglePlay(){if(audio.paused){audio.play();playIcon.classList.replace('fa-play','fa-pause')}else{audio.pause();playIcon.classList.replace('fa-pause','fa-play')}}
+    function updateProgress(){const{duration,currentTime}=audio;if(duration){const progressPercent=(currentTime/duration)*100;progress.style.width=`${progressPercent}%`}}
+    function setTime(e){const width=this.clientWidth;const clickX=e.offsetX;const duration=audio.duration;if(duration){audio.currentTime=(clickX/width)*duration}}
+    function handlePasswordSubmit(){if(passwordInput.value===DEV_PASSWORD){isDevMode=true;passwordModal.classList.add('hidden');devModeInfo.classList.remove('hidden');devModeButton.style.backgroundColor='#4caf50';passwordInput.value='';passwordError.classList.add('hidden')}else{passwordError.classList.remove('hidden')}}
+    function handleDevClick(event){
+        if(!isDevMode)return;event.stopPropagation();
+        const rect=event.target.getBoundingClientRect();const x=event.clientX-rect.left;const y=event.clientY-rect.top;
+        const xPercent=(x/rect.width*100).toFixed(2);const yPercent=(y/rect.height*100).toFixed(2);
+        const selectedModel=phoneSelect.value;
+        phones[selectedModel].stabilizationPoint={x:`${xPercent}%`,y:`${yPercent}%`};
         updatePhone();
-        
-        const codeToCopy = `'${selectedModel}': {\n    image: 'phones/${selectedModel}.png',\n    stabilizationPoint: { x: '${xPercent}%', y: '${yPercent}%' },\n    maxZoom: ${phones[selectedModel].maxZoom}\n},`;
-        console.log("Скопируйте этот код и вставьте в объект 'phones' в файле app.js:\n", codeToCopy);
+        // ИСПРАВЛЕН ПУТЬ В ГЕНЕРИРУЕМОМ КОДЕ
+        const codeToCopy=`'${selectedModel}': {\n    image: '${selectedModel}.png',\n    stabilizationPoint: { x: '${xPercent}%', y: '${yPercent}%' },\n    maxZoom: ${phones[selectedModel].maxZoom}\n},`;
+        console.log("Скопируйте этот код и вставьте в объект 'phones' в файле app.js:\n",codeToCopy);
         alert(`Точка для "${selectedModel}" установлена!\nКод для вставки в консоли (F12).`);
     }
     
