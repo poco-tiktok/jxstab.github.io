@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- ДАННЫЕ ВЕРСИИ 1.1 С НОВЫМИ КООРДИНАТАМИ ---
+    // --- ДАННЫЕ ВЕРСИИ 1.1 ---
     const phones = {
         'Xiaomi15U': { image: 'Xiaomi15U.png', stabilizationPoint: { x: '56.82%', y: '23.49%' } },
         'VivoX200U': { image: 'VivoX200U.png', stabilizationPoint: { x: '44.81%', y: '24.38%' } },
@@ -7,8 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'HuaweiPura80U': { image: 'HuaweiPura80U.png', stabilizationPoint: { x: '50.90%', y: '25.63%' } }
     };
     const DEV_PASSWORD = 'dev123';
-    let currentRotation = 0, targetRotation = 0; // Убрали лишние переменные
-    let isDevMode = false, isAnimating = false;
+    let targetRotation = 0, currentRotation = 0;
+    let isDragging = false, isDevMode = false;
+    let animationFrameId = null;
 
     // --- ЭЛЕМЕНТЫ DOM ---
     const wrapperBg = document.getElementById('wrapper-bg');
@@ -17,13 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const phoneSelect = document.getElementById('phone-select');
     const knob = document.getElementById('stabilization-knob');
     const knobHandle = document.getElementById('knob-handle');
+    const fpsCounter = document.getElementById('fps-counter');
     const devModeButton = document.getElementById('dev-mode-button');
     const devModeInfo = document.getElementById('dev-mode-info');
     const passwordModal = document.getElementById('password-modal');
     const passwordInput = document.getElementById('password-input');
     const passwordSubmit = document.getElementById('password-submit');
     const passwordError = document.getElementById('password-error');
-    const fpsCounter = document.getElementById('fps-counter');
 
     function init() {
         for (const model in phones) {
@@ -46,37 +47,57 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(fpsLoop);
     }
 
-    // --- НОВЫЙ ОПТИМИЗИРОВАННЫЙ ЦИКЛ АНИМАЦИИ ---
+    // --- ОПТИМИЗИРОВАННЫЙ ЦИКЛ АНИМАЦИИ ---
     function animationLoop() {
-        if (!isAnimating) return;
+        currentRotation += (targetRotation - currentRotation) * 0.2; // Плавное доведение
 
-        // Мгновенно применяем целевое значение без "резинового" эффекта
-        if (currentRotation !== targetRotation) {
-            currentRotation = targetRotation;
-            phoneImage.style.transform = `perspective(1000px) rotateZ(${currentRotation}deg)`;
-            knobHandle.style.transform = `translateX(-50%) rotate(${currentRotation}deg)`;
-            
-            const MAX_BLUR = 25; const BLUR_SENSITIVITY = 30;
-            const blurAmount = Math.min(MAX_BLUR, Math.abs(currentRotation % 360) / BLUR_SENSITIVITY);
-            wrapperBg.style.backdropFilter = `blur(${blurAmount}px)`;
+        phoneImage.style.transform = `perspective(1000px) rotateZ(${currentRotation}deg)`;
+        knobHandle.style.transform = `translateX(-50%) rotate(${currentRotation}deg)`;
+
+        if (Math.abs(targetRotation - currentRotation) > 0.01) {
+            animationFrameId = requestAnimationFrame(animationLoop);
+        } else {
+            animationFrameId = null;
         }
-        
-        requestAnimationFrame(animationLoop);
     }
 
-    function startAnimationLoop() {
-        if (!isAnimating) {
-            isAnimating = true;
-            animationLoop();
-        }
+    // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
+    let startDragAngle = 0, startPhoneRotation = 0;
+    function onDragStart(e) {
+        e.preventDefault();
+        isDragging = true;
+        startDragAngle = getAngleFromEvent(e);
+        startPhoneRotation = currentRotation;
+        document.body.style.cursor = 'grabbing';
+        wrapperBg.classList.add('is-rotating');
+        if (!animationFrameId) animationFrameId = requestAnimationFrame(animationLoop);
+        document.addEventListener('mousemove', onDragMove);
+        document.addEventListener('mouseup', onDragEnd);
+        document.addEventListener('touchmove', onDragMove, { passive: false });
+        document.addEventListener('touchend', onDragEnd);
+    }
+    function onDragMove(e) { if (!isDragging) return; const angleDifference = getAngleFromEvent(e) - startDragAngle; targetRotation = startPhoneRotation + angleDifference; }
+    function onDragEnd() {
+        isDragging = false;
+        document.body.style.cursor = 'default';
+        wrapperBg.classList.remove('is-rotating');
+        document.removeEventListener('mousemove', onDragMove);
+        document.removeEventListener('mouseup', onDragEnd);
+        document.removeEventListener('touchmove', onDragMove);
+        document.removeEventListener('touchend', onDragEnd);
     }
     
-    // --- ОБРАБОТЧИКИ СОБЫТИЙ (ТЕПЕРЬ ПРОСТО ОБНОВЛЯЮТ ЦЕЛИ) ---
-    let startDragAngle = 0, startPhoneRotation = 0;
-    function onDragStart(e) { e.preventDefault(); startDragAngle = getAngleFromEvent(e); startPhoneRotation = currentRotation; document.body.style.cursor = 'grabbing'; document.addEventListener('mousemove', onDragMove); document.addEventListener('mouseup', onDragEnd); document.addEventListener('touchmove', onDragMove, { passive: false }); document.addEventListener('touchend', onDragEnd); startAnimationLoop(); }
-    function onDragMove(e) { const angleDifference = getAngleFromEvent(e) - startDragAngle; targetRotation = startPhoneRotation + angleDifference; }
-    function onDragEnd() { document.body.style.cursor = 'default'; document.removeEventListener('mousemove', onDragMove); document.removeEventListener('mouseup', onDragEnd); document.removeEventListener('touchmove', onDragMove); document.removeEventListener('touchend', onDragEnd); isAnimating = false; }
-    function handleMouseWheel(e) { e.preventDefault(); const rotationStep = 5; targetRotation += e.deltaY > 0 ? rotationStep : -rotationStep; startAnimationLoop(); }
+    let wheelTimeout;
+    function handleMouseWheel(e) {
+        e.preventDefault();
+        targetRotation += e.deltaY > 0 ? 5 : -5;
+        wrapperBg.classList.add('is-rotating');
+        if (!animationFrameId) animationFrameId = requestAnimationFrame(animationLoop);
+        clearTimeout(wheelTimeout);
+        wheelTimeout = setTimeout(() => {
+            wrapperBg.classList.remove('is-rotating');
+        }, 300);
+    }
     
     // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
     function getAngleFromEvent(e) { const rect = knob.getBoundingClientRect(); const centerX = rect.left + rect.width / 2; const centerY = rect.top + rect.height / 2; const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY; return (Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI)); }
@@ -84,21 +105,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedModel = phoneSelect.value; if (!selectedModel) return;
         const phoneData = phones[selectedModel];
         const originPoint = `${phoneData.stabilizationPoint.x} ${phoneData.stabilizationPoint.y}`;
-        phoneImage.style.transformOrigin = originPoint; phoneContainer.style.transformOrigin = originPoint;
+        phoneImage.style.transformOrigin = originPoint;
+        phoneContainer.style.transformOrigin = originPoint;
         phoneImage.src = phoneData.image;
-        
-        targetRotation = 0; // Сбрасываем целевое вращение
-        applyRotationAndEffects(); // Применяем сброс
+        targetRotation = currentRotation = 0;
+        applyInitialTransform();
     }
-    function applyRotationAndEffects() {
-        currentRotation = targetRotation;
-        phoneImage.style.transform = `perspective(1000px) rotateZ(${currentRotation}deg)`;
-        knobHandle.style.transform = `translateX(-50%) rotate(${currentRotation}deg)`;
-        const MAX_BLUR = 25; const BLUR_SENSITIVITY = 30;
-        const blurAmount = Math.min(MAX_BLUR, Math.abs(currentRotation % 360) / BLUR_SENSITIVITY);
-        wrapperBg.style.backdropFilter = `blur(${blurAmount}px)`;
+    function applyInitialTransform() {
+        phoneImage.style.transform = `perspective(1000px) rotateZ(0deg)`;
+        knobHandle.style.transform = `translateX(-50%) rotate(0deg)`;
+        wrapperBg.classList.remove('is-rotating');
     }
-
+    
     // --- FPS И DEV-РЕЖИМ ---
     let lastTime = performance.now(); let frameCount = 0;
     function fpsLoop(currentTime) { frameCount++; if (currentTime - lastTime >= 1000) { fpsCounter.textContent = `${frameCount} FPS`; frameCount = 0; lastTime = currentTime; } requestAnimationFrame(fpsLoop); }
