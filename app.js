@@ -7,13 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
         'HuaweiPura80U': { image: 'HuaweiPura80U.png', stabilizationPoint: { x: '50.90%', y: '25.63%' } }
     };
     const DEV_PASSWORD = 'dev123';
-    let targetRotation = 0, currentRotation = 0;
-    let isDragging = false, isDevMode = false;
-    let animationFrameId = null;
+    let targetRotation = 0, currentRotation = -1; // -1 чтобы первая отрисовка всегда срабатывала
+    let isDevMode = false;
 
     // --- ЭЛЕМЕНТЫ DOM ---
     const wrapperBg = document.getElementById('wrapper-bg');
-    const phoneContainer = document.getElementById('phone-container');
     const phoneImage = document.getElementById('phone-image');
     const phoneSelect = document.getElementById('phone-select');
     const knob = document.getElementById('stabilization-knob');
@@ -44,41 +42,44 @@ document.addEventListener('DOMContentLoaded', () => {
         passwordInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') handlePasswordSubmit(); });
         phoneImage.addEventListener('click', handleDevClick);
         
+        // Запускаем оба цикла анимации
         requestAnimationFrame(fpsLoop);
+        requestAnimationFrame(animationLoop);
     }
 
-    // --- ОПТИМИЗИРОВАННЫЙ ЦИКЛ АНИМАЦИИ ---
+    // --- НОВЫЙ, МГНОВЕННЫЙ ЦИКЛ АНИМАЦИИ ---
     function animationLoop() {
-        currentRotation += (targetRotation - currentRotation) * 0.2; // Плавное доведение
-
-        phoneImage.style.transform = `perspective(1000px) rotateZ(${currentRotation}deg)`;
-        knobHandle.style.transform = `translateX(-50%) rotate(${currentRotation}deg)`;
-
-        if (Math.abs(targetRotation - currentRotation) > 0.01) {
-            animationFrameId = requestAnimationFrame(animationLoop);
-        } else {
-            animationFrameId = null;
+        // Если целевое значение не совпадает с текущим - обновляем.
+        // Никакого сглаживания, просто прямое присваивание.
+        if (currentRotation !== targetRotation) {
+            currentRotation = targetRotation;
+            phoneImage.style.transform = `perspective(1000px) rotateZ(${currentRotation}deg)`;
+            knobHandle.style.transform = `translateX(-50%) rotate(${currentRotation}deg)`;
         }
+        
+        // Цикл работает постоянно, чтобы мгновенно подхватывать изменения.
+        // Это очень дешевая операция, если нет изменений DOM.
+        requestAnimationFrame(animationLoop);
     }
 
-    // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
+    // --- ОБРАБОТЧИКИ СОБЫТИЙ (только меняют targetRotation) ---
     let startDragAngle = 0, startPhoneRotation = 0;
     function onDragStart(e) {
         e.preventDefault();
-        isDragging = true;
         startDragAngle = getAngleFromEvent(e);
-        startPhoneRotation = currentRotation;
+        startPhoneRotation = currentRotation; // Используем уже отрисованное значение
         document.body.style.cursor = 'grabbing';
         wrapperBg.classList.add('is-rotating');
-        if (!animationFrameId) animationFrameId = requestAnimationFrame(animationLoop);
         document.addEventListener('mousemove', onDragMove);
         document.addEventListener('mouseup', onDragEnd);
         document.addEventListener('touchmove', onDragMove, { passive: false });
         document.addEventListener('touchend', onDragEnd);
     }
-    function onDragMove(e) { if (!isDragging) return; const angleDifference = getAngleFromEvent(e) - startDragAngle; targetRotation = startPhoneRotation + angleDifference; }
+    function onDragMove(e) {
+        const angleDifference = getAngleFromEvent(e) - startDragAngle;
+        targetRotation = startPhoneRotation + angleDifference;
+    }
     function onDragEnd() {
-        isDragging = false;
         document.body.style.cursor = 'default';
         wrapperBg.classList.remove('is-rotating');
         document.removeEventListener('mousemove', onDragMove);
@@ -92,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         targetRotation += e.deltaY > 0 ? 5 : -5;
         wrapperBg.classList.add('is-rotating');
-        if (!animationFrameId) animationFrameId = requestAnimationFrame(animationLoop);
         clearTimeout(wheelTimeout);
         wheelTimeout = setTimeout(() => {
             wrapperBg.classList.remove('is-rotating');
@@ -101,26 +101,26 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
     function getAngleFromEvent(e) { const rect = knob.getBoundingClientRect(); const centerX = rect.left + rect.width / 2; const centerY = rect.top + rect.height / 2; const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY; return (Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI)); }
+    
     function updatePhone() {
         const selectedModel = phoneSelect.value; if (!selectedModel) return;
         const phoneData = phones[selectedModel];
         const originPoint = `${phoneData.stabilizationPoint.x} ${phoneData.stabilizationPoint.y}`;
         phoneImage.style.transformOrigin = originPoint;
-        phoneContainer.style.transformOrigin = originPoint;
+        document.getElementById('phone-container').style.transformOrigin = originPoint;
         phoneImage.src = phoneData.image;
-        targetRotation = currentRotation = 0;
-        applyInitialTransform();
-    }
-    function applyInitialTransform() {
-        phoneImage.style.transform = `perspective(1000px) rotateZ(0deg)`;
-        knobHandle.style.transform = `translateX(-50%) rotate(0deg)`;
+        
+        targetRotation = 0;
+        // Принудительно сбрасываем состояние без анимации
+        currentRotation = -1; // Гарантируем, что цикл обновит значение
+        animationLoop(); // Вызываем один раз для немедленного сброса
         wrapperBg.classList.remove('is-rotating');
     }
     
     // --- FPS И DEV-РЕЖИМ ---
     let lastTime = performance.now(); let frameCount = 0;
     function fpsLoop(currentTime) { frameCount++; if (currentTime - lastTime >= 1000) { fpsCounter.textContent = `${frameCount} FPS`; frameCount = 0; lastTime = currentTime; } requestAnimationFrame(fpsLoop); }
-    function handlePasswordSubmit(){if(passwordInput.value===DEV_PASSWORD){isDevMode=true;passwordModal.classList.add('hidden');devModeInfo.classList.remove('hidden');devModeButton.style.backgroundColor='#4caf50';passwordInput.value='';passwordError.classList.add('hidden')}else{passwordError.classList.remove('hidden')}}
+    function handlePasswordSubmit(){if(passwordInput.value===DEV_PASSWORD){isDevMode=true;passwordModal.classList.add('hidden');document.getElementById('dev-mode-info').classList.remove('hidden');devModeButton.style.backgroundColor='#4caf50';passwordInput.value='';document.getElementById('password-error').classList.add('hidden')}else{document.getElementById('password-error').classList.remove('hidden')}}
     function handleDevClick(event){ if(!isDevMode)return;event.stopPropagation(); const rect=event.target.getBoundingClientRect();const x=event.clientX-rect.left;const y=event.clientY-rect.top; const xPercent=(x/rect.width*100).toFixed(2);const yPercent=(y/rect.height*100).toFixed(2); const selectedModel=phoneSelect.value; phones[selectedModel].stabilizationPoint={x:`${xPercent}%`,y:`${yPercent}%`}; updatePhone(); const codeToCopy=`'${selectedModel}': {\n    image: '${selectedModel}.png',\n    stabilizationPoint: { x: '${xPercent}%', y: '${yPercent}%' }\n},`; console.log("Скопируйте этот код и вставьте в объект 'phones' в файле app.js:\n",codeToCopy); alert(`Точка для "${selectedModel}" установлена!\nКод для вставки в консоли (F12).`); }
     
     init();
