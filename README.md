@@ -6,7 +6,7 @@
 
 ---
 
-https://i.gifer.com/6mz.gif
+(https://i.gifer.com/6mz.gif)
 
 ## В чём фишка?
 
