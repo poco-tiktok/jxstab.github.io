@@ -8,52 +8,36 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <header class="app-header">
         <span class="version-text">Версия 1.1</span>
-        <!-- НОВЫЙ СЧЕТЧИК FPS -->
         <span id="fps-counter">-- FPS</span>
         <a href="https://t.me/jeliktontech" target="_blank" class="rainbow-text">t.me/jeliktontech</a>
     </header>
-
     <div class="app-layout">
         <div id="wrapper-bg" class="stabilization-wrapper">
             <div id="phone-container">
                 <img id="phone-image" src="" alt="Телефон">
             </div>
         </div>
-    
         <div class="controls">
             <h2>Настройки</h2>
-
             <div class="control-group">
                 <label for="phone-select">Модель телефона:</label>
                 <select id="phone-select"></select>
             </div>
-            
-            <div class="control-group">
-                <label for="zoom-slider">Зум: <span id="zoom-value">1.0</span>x</label>
-                <input type="range" id="zoom-slider" min="1" max="100" value="1" step="0.1">
-            </div>
-
             <div class="control-group stabilization-control">
                 <label>Вращение телефона (Колесо мыши)</label>
                 <div class="knob-container">
                     <div id="stabilization-knob"><div id="knob-handle"></div></div>
                 </div>
             </div>
-            
-            <!-- ОБНОВЛЕННАЯ КНОПКА ПОДДЕРЖКИ -->
             <a href="https://t.me/jelikton?text=Привет!%20Хочу%20поддержать%20твой%20проект." target="_blank" class="support-button">
                 <span><i class="fas fa-rocket"></i> Поддержать проект</span>
             </a>
-    
             <button id="dev-mode-button">Режим разработчика</button>
             <p id="dev-mode-info" class="hidden">✓ Режим активен</p>
         </div>
     </div>
-
-    <!-- Модальное окно для пароля (без изменений) -->
     <div id="password-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h3>Вход для разработчика</h3>
@@ -62,7 +46,6 @@
             <p id="password-error" class="hidden">Неверный пароль!</p>
         </div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
