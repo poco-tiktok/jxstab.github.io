@@ -3,49 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Stabilization Effect v1.1</title>
+    <title>Camera Stabilization Effect v1.2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="game/game.css">
 </head>
 <body>
-    <header class="app-header">
-        <span class="version-text">Версия 1.1</span>
-        <span id="fps-counter">-- FPS</span>
-        <a href="https://t.me/jeliktontech" target="_blank" class="rainbow-text">t.me/jeliktontech</a>
-    </header>
-    <div class="app-layout">
-        <div id="wrapper-bg" class="stabilization-wrapper">
-            <div id="phone-container">
-                <img id="phone-image" src="" alt="Телефон">
+    <!-- ОСНОВНОЙ ИНТЕРФЕЙС СИМУЛЯТОРА -->
+    <div id="main-app" class="app-container">
+        <header class="app-header">
+            <span class="version-text">Версия 1.2</span>
+            <span id="fps-counter">-- FPS</span>
+            <a href="https://t.me/jeliktontech" target="_blank" class="rainbow-text">t.me/jeliktontech</a>
+        </header>
+        <div class="app-layout">
+            <div id="wrapper-bg" class="stabilization-wrapper">
+                <div id="phone-container"><img id="phone-image" src="" alt="Телефон"></div>
             </div>
-        </div>
-        <div class="controls">
-            <h2>Настройки</h2>
-            <div class="control-group">
-                <label for="phone-select">Модель телефона:</label>
-                <select id="phone-select"></select>
+            <div class="controls">
+                <h2>Настройки</h2>
+                <div class="control-group"><label for="phone-select">Модель телефона:</label><select id="phone-select"></select></div>
+                <div class="control-group stabilization-control"><label>Вращение телефона</label><div class="knob-container"><div id="stabilization-knob"><div id="knob-handle"></div></div></div></div>
+                <button id="go-to-game-btn"><i class="fas fa-piggy-bank"></i> Копилка</button>
+                <a href="https://t.me/jelikton?text=Привет!%20Хочу%20поддержать%20твой%20проект." target="_blank" class="support-button"><span><i class="fas fa-rocket"></i> Поддержать проект</span></a>
+                <button id="dev-mode-button">Режим разработчика</button>
+                <p id="dev-mode-info" class="hidden">✓ Режим активен</p>
             </div>
-            <div class="control-group stabilization-control">
-                <label>Вращение телефона (Колесо мыши)</label>
-                <div class="knob-container">
-                    <div id="stabilization-knob"><div id="knob-handle"></div></div>
-                </div>
-            </div>
-            <a href="https://t.me/jelikton?text=Привет!%20Хочу%20поддержать%20твой%20проект." target="_blank" class="support-button">
-                <span><i class="fas fa-rocket"></i> Поддержать проект</span>
-            </a>
-            <button id="dev-mode-button">Режим разработчика</button>
-            <p id="dev-mode-info" class="hidden">✓ Режим активен</p>
         </div>
     </div>
+
+    <!-- ЭКРАН ИГРЫ (изначально скрыт) -->
+    <div id="game-screen" class="app-container hidden">
+        <div class="game-header">
+            <div class="coins-display"><i class="fas fa-coins"></i> <span id="game-coins">0</span></div>
+            <button id="back-to-main-btn"><i class="fas fa-arrow-left"></i> Назад</button>
+        </div>
+        <div class="clicker-zone">
+            <button id="clicker-button" class="clicker-button"></button>
+            <div class="click-value-display">+<span id="click-value">1</span></div>
+        </div>
+        <div class="upgrades-zone">
+            <h3>Магазин</h3>
+            <div class="upgrades-list">
+                <button id="upgrade-multiplier-btn" class="upgrade-btn" data-cost="500">
+                    <div class="upgrade-info"><strong>Множитель кликов</strong><span>+2 к клику</span></div>
+                    <div class="upgrade-cost"><i class="fas fa-coins"></i> <span>500</span></div>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ФЕЙКОВЫЙ ЭКРАН ЗАГРУЗКИ -->
+    <div id="loading-screen" class="loading-overlay hidden">
+        <div class="loader"></div>
+        <p>Загрузка игрового модуля...</p>
+    </div>
+
+    <!-- Модальное окно для пароля -->
     <div id="password-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3>Вход для разработчика</h3>
-            <input type="password" id="password-input" placeholder="Введите пароль">
-            <button id="password-submit">Войти</button>
-            <p id="password-error" class="hidden">Неверный пароль!</p>
-        </div>
+        <div class="modal-content"><h3>Вход для разработчика</h3><input type="password" id="password-input" placeholder="Введите пароль"><button id="password-submit">Войти</button><p id="password-error" class="hidden">Неверный пароль!</p></div>
     </div>
+
+    <!-- ИСПРАВЛЕН ПОРЯДОК ЗАГРУЗКИ СКРИПТОВ -->
+    <script src="game/game.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
