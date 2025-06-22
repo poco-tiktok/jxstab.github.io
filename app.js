@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- ОСНОВНЫЕ ФУНКЦИИ ---
     function updatePhoneSelector() {
-        const unlockedPhones = isDevMode ? Object.keys(phones) : (typeof window.getUnlockedPhones === 'function' ? window.getUnlockedPhones() : ['Redmi9A']);
+        const unlockedPhones = Object.keys(phones); // Разблокируем все телефоны всегда
         const currentSelected = phoneSelect.value;
         phoneSelect.innerHTML = '';
         unlockedPhones.forEach(modelName => {
